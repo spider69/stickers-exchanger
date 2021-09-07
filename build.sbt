@@ -1,7 +1,26 @@
-name := "stickers-exchanger"
+import Dependencies._
 
-version := "0.1"
+ThisBuild / scalacOptions += "-Ymacro-annotations"
 
-scalaVersion := "2.13.6"
+ThisBuild / scalaVersion := "2.13.6"
 
-idePackagePrefix := Some("org.yusupov")
+lazy val backend = (project in file("."))
+  .aggregate(
+    zio_service
+  )
+
+lazy val zio_service = (project in file("zio_service"))
+  .settings(
+    name := "zio_service",
+    libraryDependencies ++= Seq(
+      logback,
+      zio,
+      zioConfig,
+      pureConfig,
+      http4sServer,
+      circe,
+      doobie,
+      liquiBase,
+      postgres
+    ).flatten
+  )
