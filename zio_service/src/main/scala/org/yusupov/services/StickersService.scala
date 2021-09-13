@@ -2,7 +2,7 @@ package org.yusupov.services
 
 import org.yusupov.database.repositories.StickersRepository
 import org.yusupov.database.services.TransactorService
-import org.yusupov.structures.{CollectionId, Sticker, StickerId}
+import org.yusupov.structures.{Sticker, StickerId}
 import zio.interop.catz._
 import zio.macros.accessible
 import zio.random.Random

@@ -5,6 +5,7 @@ object Dependencies {
 
   object Versions {
     lazy val LogbackVersion = "1.2.5"
+    lazy val sl4jVersion = "1.7.30"
     lazy val PureconfigVersion = "0.16.0"
 
     // zio
@@ -14,13 +15,17 @@ object Dependencies {
     lazy val ZioConfigVersion = "1.0.6"
 
     // http4s
-    lazy val Http4sVersion = "0.23.1"
+    lazy val Http4sVersion = "0.23.3"
     lazy val CirceVersion = "0.14.1"
+    lazy val ReactormonkVersion = "1.3"
 
     // database
     lazy val DoobieVersion = "1.0.0-RC1"
     lazy val LiquibaseVersion = "4.4.3"
     lazy val PostgresVersion = "42.2.23"
+
+    // security
+    lazy val CommonsCodecVersion = "1.15"
   }
 
   lazy val logback = Seq(
@@ -51,7 +56,8 @@ object Dependencies {
     "org.http4s" %% "http4s-dsl"          % Http4sVersion,
     "org.http4s" %% "http4s-circe"        % Http4sVersion,
     "org.http4s" %% "http4s-blaze-server" % Http4sVersion,
-    "org.http4s" %% "http4s-blaze-client" % Http4sVersion
+    "org.http4s" %% "http4s-blaze-client" % Http4sVersion,
+    "org.reactormonk" %% "cryptobits" % ReactormonkVersion
   )
 
   lazy val circe = Seq(
@@ -73,6 +79,10 @@ object Dependencies {
 
   lazy val postgres = Seq(
     "org.postgresql" % "postgresql" % PostgresVersion
+  )
+
+  lazy val security = Seq(
+    "commons-codec" % "commons-codec" % CommonsCodecVersion
   )
 
 }

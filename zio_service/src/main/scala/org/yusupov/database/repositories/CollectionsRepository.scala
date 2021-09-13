@@ -1,14 +1,10 @@
 package org.yusupov.database.repositories
 
-import doobie.quill.DoobieContext
-import io.getquill.{CompositeNamingStrategy2, Escape, Literal}
-import org.yusupov.database.services.TransactorService
 import org.yusupov.structures.{Collection, CollectionId}
 import zio.{Has, ULayer, ZLayer}
 
-object CollectionsRepository extends RepositoryImplicits {
+object CollectionsRepository extends Repository {
 
-  lazy val dbContext: DoobieContext.Postgres[CompositeNamingStrategy2[Escape.type, Literal.type]] = TransactorService.doobieContext
   import dbContext._
 
   type CollectionsRepository = Has[Service]

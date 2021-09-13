@@ -4,15 +4,14 @@ import cats.effect.{ExitCode => CatsExitCode}
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.Router
-import org.yusupov.api.{CollectionsApi, StickersApi}
-import org.yusupov.config.{Config, ConfigService}
+import org.yusupov.api.{AuthApi, CollectionsApi, StickersApi}
 import org.yusupov.config.ConfigService.Configuration
-import org.yusupov.database.repositories.{CollectionsRepository, StickersRepository}
-import org.yusupov.database.services.{MigrationService, TransactorService}
+import org.yusupov.config.{Config, ConfigService}
+import org.yusupov.database.repositories.{CollectionsRepository, SessionsRepository, StickersRepository, UsersRepository}
 import org.yusupov.database.services.MigrationService.{Liqui, MigrationService}
 import org.yusupov.database.services.TransactorService.DBTransactor
-import org.yusupov.services.{CollectionsService, StickersService}
-import org.yusupov.services.StickersService.StickersService
+import org.yusupov.database.services.{MigrationService, TransactorService}
+import org.yusupov.services.{CollectionsService, StickersService, UsersService}
 import zio.blocking.Blocking
 import zio.clock.Clock
 import zio.interop.catz._
@@ -21,21 +20,26 @@ import zio.{RIO, ZIO}
 
 object Main extends zio.App {
 
-  type AppEnvironment = StickersService with StickersRepository.StickersRepository
-    with CollectionsService.CollectionsService with CollectionsRepository.CollectionsRepository
-    with Configuration with Clock with Blocking with Random
-    with Liqui with MigrationService with DBTransactor
+  type AppEnvironment =
+    StickersService.StickersService with StickersRepository.StickersRepository with
+      CollectionsService.CollectionsService with CollectionsRepository.CollectionsRepository with
+      UsersService.UsersService with UsersRepository.UsersRepository with SessionsRepository.SessionsRepository with
+      Configuration with Clock with Blocking with Random with
+      Liqui with MigrationService with DBTransactor
 
-  val appEnvironment = ConfigService.live >+> Blocking.live >+>
+  val appEnvironment =
+    ConfigService.live >+> Blocking.live >+>
     TransactorService.live >+> MigrationService.liquibaseLayer >+> MigrationService.live >+>
     StickersRepository.live >+> StickersService.live >+>
-    CollectionsRepository.live >+> CollectionsService.live
+    CollectionsRepository.live >+> CollectionsService.live >+>
+      UsersRepository.live >+> SessionsRepository.live >+> UsersService.live
 
   type AppTask[A] = RIO[AppEnvironment, A]
 
   val httpApp = Router[AppTask](
-    "/stickers" -> new StickersApi().route,
-    "/collections" -> new CollectionsApi().route
+    "/stickers" -> new StickersApi().routes,
+    "/collections" -> new CollectionsApi().routes,
+    "/auth" -> new AuthApi().routes
   ).orNotFound
 
   val server = for {

@@ -2,9 +2,10 @@ package org.yusupov.database.repositories
 
 import doobie.quill.DoobieContext
 import io.getquill.{CompositeNamingStrategy2, Escape, Literal}
+import org.yusupov.database.services.TransactorService
 
-trait RepositoryImplicits {
-  val dbContext: DoobieContext.Postgres[CompositeNamingStrategy2[Escape.type, Literal.type]]
+trait Repository {
+  val dbContext: DoobieContext.Postgres[CompositeNamingStrategy2[Escape.type, Literal.type]] = TransactorService.doobieContext
 
   import dbContext._
 

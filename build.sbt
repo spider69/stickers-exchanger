@@ -21,6 +21,8 @@ lazy val zio_service = (project in file("zio_service"))
       circe,
       doobie,
       liquiBase,
-      postgres
-    ).flatten
+      postgres,
+      security
+    ).flatten,
+    dependencyOverrides += "org.slf4j" % "slf4j-api" % Versions.sl4jVersion
   )
