@@ -7,27 +7,30 @@
 
     <changeSet id="create initial tables" author="author">
         <createTable tableName="Stickers">
-            <column name="id" type="varchar">
+            <column name="id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="collectionId" type="varchar">
+            <column name="collectionId" type="uuid">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar">
+            <column name="number" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar" defaultValue="">
                 <constraints nullable="false"/>
             </column>
         </createTable>
         <createTable tableName="Collections">
-            <column name="id" type="varchar">
+            <column name="id" type="uuid">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="name" type="varchar">
-                <constraints nullable="false"/>
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="numberOfStickers" type="int">
                 <constraints nullable="false"/>
             </column>
-            <column name="description" type="varchar">
+            <column name="description" type="varchar" defaultValue="">
                 <constraints nullable="false"/>
             </column>
         </createTable>

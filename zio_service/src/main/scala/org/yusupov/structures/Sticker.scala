@@ -1,7 +1,20 @@
 package org.yusupov.structures
 
+import org.yusupov.database.dao.StickerDao
+
 case class Sticker(
   id: StickerId,
-  collectionId: CollectionId,
+  number: String,
   description: String = ""
-)
+) {
+  def toDao(collectionId: CollectionId): StickerDao =
+    StickerDao(id, collectionId, number, description)
+}
+
+case class StickerInsertion(
+  number: String,
+  description: String = ""
+) {
+  def toDao(id: StickerId, collectionId: CollectionId): StickerDao =
+    StickerDao(id, collectionId, number, description)
+}

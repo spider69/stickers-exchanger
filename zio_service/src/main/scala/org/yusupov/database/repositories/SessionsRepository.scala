@@ -14,7 +14,7 @@ object SessionsRepository extends Repository {
     def get(id: SessionId): Result[Option[SessionDao]]
     def getByUser(userId: UserId): Result[List[SessionDao]]
     def insert(session: SessionDao): Result[Unit]
-    def delete(userId: UserId): Result[Unit]
+    def delete(id: SessionId): Result[Unit]
   }
 
   class ServiceImpl() extends Service {
@@ -31,8 +31,8 @@ object SessionsRepository extends Repository {
     override def insert(session: SessionDao) =
       dbContext.run(sessionsTable.insert(lift(session))).unit
 
-    override def delete(userId: UserId) =
-      dbContext.run(sessionsTable.filter(_.userId == lift(userId)).delete).unit
+    override def delete(id: SessionId) =
+      dbContext.run(sessionsTable.filter(_.id == lift(id)).delete).unit
   }
 
   lazy val live: ULayer[SessionsRepository.SessionsRepository] =

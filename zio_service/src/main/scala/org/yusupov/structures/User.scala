@@ -12,3 +12,8 @@ case class User(
     UserDao(id, name, SecurityUtils.countSecretHash(password, salt), salt)
   }
 }
+
+case class UserWithSession(
+  session: Session,
+  user: User
+)

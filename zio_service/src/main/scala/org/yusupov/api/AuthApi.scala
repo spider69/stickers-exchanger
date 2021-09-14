@@ -1,53 +1,18 @@
 package org.yusupov.api
 
-import cats.data.{Kleisli, OptionT}
 import cats.implicits._
 import io.circe.generic.auto._
-import org.http4s.headers.Authorization
-import org.http4s.server.AuthMiddleware
-import org.http4s.syntax.header._
-import org.http4s.{AuthedRoutes, HttpRoutes, Request}
-import org.yusupov.database.services.TransactorService
+import org.http4s.{AuthedRoutes, HttpRoutes}
+import org.yusupov.database.services.TransactorService.DBTransactor
 import org.yusupov.services.UsersService
-import org.yusupov.structures.{Password, User}
-import zio.ZIO
+import org.yusupov.services.UsersService.UsersService
+import org.yusupov.structures.{Password, User, UserWithSession}
 import zio.interop.catz._
 import zio.random.Random
 
-import java.util.UUID
-import scala.util.Try
-
-class AuthApi[R <: UsersService.UsersService with TransactorService.DBTransactor with Random] extends Api[R] {
+class AuthApi[R <: UsersService with DBTransactor with Random] extends Api[R] {
 
   import dsl._
-
-  def getUser(request: Request[ApiTask]): ApiTask[Either[Throwable, User]] = {
-    val sessionId =
-      request.headers.get[Authorization]
-        .map(_.value.replaceFirst("Token ", ""))
-        .toRight(new Exception("Auth header is absent"))
-    for {
-      id <- ZIO.fromEither(sessionId)
-      sessionId <- ZIO.fromTry(Try(UUID.fromString(id)))
-      session <- UsersService.getSession(sessionId).map(_.toRight(new Exception("Session not found")))
-      userId <- ZIO.fromEither(session.map(_.userId))
-      user <- UsersService.getUser(userId).map(_.toRight(new Exception("User not found")))
-    } yield user
-  }
-
-  val authUser: Kleisli[ApiTask, Request[ApiTask], Either[String, User]] = Kleisli { request =>
-    getUser(request).map { e =>
-      e.left.map(_.toString)
-    }.foldM(
-      e => ZIO.left(e.toString),
-      {
-        case Left(value) => ZIO.left(value)
-        case Right(value) => ZIO.right(value)
-      }
-    )
-  }
-  val onFailure: AuthedRoutes[String, ApiTask] = Kleisli(req => OptionT.liftF(Forbidden(req.context)))
-  val middleware: AuthMiddleware[ApiTask, User] = AuthMiddleware(authUser, onFailure)
 
   case class ApiUser(login: String, password: Password)
 
@@ -77,12 +42,15 @@ class AuthApi[R <: UsersService.UsersService with TransactorService.DBTransactor
       )
   }
 
-  val authedRoutes: AuthedRoutes[User, ApiTask] = AuthedRoutes.of[User, ApiTask] {
-    case GET -> Root as user =>
-      Ok(s"Welcome, ${user.name}")
+  val authedRoutes: AuthedRoutes[UserWithSession, ApiTask] = AuthedRoutes.of[UserWithSession, ApiTask] {
+    case DELETE -> Root / "sign_out" as UserWithSession(session, _) =>
+      UsersService.deleteSession(session.id).foldM(
+        err => BadRequest(err.getMessage),
+        result => Ok(result)
+      )
   }
 
   override def routes: HttpRoutes[ApiTask] =
-     standardRoutes <+> middleware(authedRoutes)
+     standardRoutes <+> authMiddleware(authedRoutes)
 
 }

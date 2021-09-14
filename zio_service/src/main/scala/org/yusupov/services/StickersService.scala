@@ -2,11 +2,13 @@ package org.yusupov.services
 
 import org.yusupov.database.repositories.StickersRepository
 import org.yusupov.database.services.TransactorService
-import org.yusupov.structures.{Sticker, StickerId}
+import org.yusupov.structures.{Sticker, StickerId, StickerInsertion}
 import zio.interop.catz._
 import zio.macros.accessible
 import zio.random.Random
 import zio.{Has, RIO, ZLayer}
+
+import java.util.UUID
 
 @accessible
 object StickersService {
@@ -15,8 +17,8 @@ object StickersService {
 
   trait Service {
     def getAll: RIO[TransactorService.DBTransactor, List[Sticker]]
-    def insert(sticker: Sticker): RIO[TransactorService.DBTransactor with Random, StickerId]
-    def delete(stickerId: StickerId): RIO[TransactorService.DBTransactor, Unit]
+    def insert(collectionId: String, sticker: StickerInsertion): RIO[TransactorService.DBTransactor with Random, StickerId]
+    def delete(stickerId: String): RIO[TransactorService.DBTransactor, Unit]
   }
 
   class ServiceImpl(stickersRepository: StickersRepository.Service) extends Service {
@@ -25,20 +27,23 @@ object StickersService {
     override def getAll: RIO[TransactorService.DBTransactor, List[Sticker]] =
       for {
         transactor <- TransactorService.databaseTransactor
-        stickers <- stickersRepository.getAll.transact(transactor)
+        stickersDao <- stickersRepository.getAll.transact(transactor)
+        stickers = stickersDao.map(_.toSticker)
       } yield stickers
 
-    override def insert(sticker: Sticker): RIO[TransactorService.DBTransactor with Random, String] =
+    override def insert(collectionIdAsString: String, sticker: StickerInsertion): RIO[TransactorService.DBTransactor with Random, StickerId] =
       for {
         transactor <- TransactorService.databaseTransactor
-        uuid <- zio.random.nextUUID.map(_.toString)
-        _ <- stickersRepository.insert(sticker.copy(id = uuid)).transact(transactor)
-      } yield uuid
+        stickerId <- zio.random.nextUUID
+        collectionId = UUID.fromString(collectionIdAsString)
+        _ <- stickersRepository.insert(sticker.toDao(stickerId, collectionId)).transact(transactor)
+      } yield stickerId
 
-    override def delete(stickerId: StickerId): RIO[TransactorService.DBTransactor, Unit] =
+    override def delete(stickerId: String): RIO[TransactorService.DBTransactor, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
-        _ <- stickersRepository.delete(stickerId).transact(transactor)
+        id = UUID.fromString(stickerId)
+        _ <- stickersRepository.delete(id).transact(transactor)
       } yield ()
   }
 

@@ -1,6 +1,7 @@
 package org.yusupov.database.repositories
 
-import org.yusupov.structures.{Sticker, StickerId}
+import org.yusupov.database.dao.StickerDao
+import org.yusupov.structures.StickerId
 import zio.{Has, ULayer, ZLayer}
 
 object StickersRepository extends Repository {
@@ -10,28 +11,28 @@ object StickersRepository extends Repository {
   type StickersRepository = Has[Service]
 
   trait Service {
-    def get(stickerId: StickerId): Result[Option[Sticker]]
-    def getAll: Result[List[Sticker]]
-    def insert(sticker: Sticker): Result[Unit]
-    def update(sticker: Sticker): Result[Unit]
+    def get(stickerId: StickerId): Result[Option[StickerDao]]
+    def getAll: Result[List[StickerDao]]
+    def insert(sticker: StickerDao): Result[Unit]
+    def update(sticker: StickerDao): Result[Unit]
     def delete(stickerId: StickerId): Result[Unit]
   }
 
   class ServiceImpl() extends Service {
     lazy val stickersTable = quote {
-      querySchema[Sticker](""""Stickers"""")
+      querySchema[StickerDao](""""Stickers"""")
     }
 
-    override def get(stickerId: StickerId): Result[Option[Sticker]] =
+    override def get(stickerId: StickerId): Result[Option[StickerDao]] =
       dbContext.run(stickersTable.filter(_.id == lift(stickerId))).map(_.headOption)
 
-    override def getAll: Result[List[Sticker]] =
+    override def getAll: Result[List[StickerDao]] =
       dbContext.run(stickersTable)
 
-    override def insert(sticker: Sticker): Result[Unit] =
+    override def insert(sticker: StickerDao): Result[Unit] =
       dbContext.run(stickersTable.insert(lift(sticker))).unit
 
-    override def update(sticker: Sticker): Result[Unit] =
+    override def update(sticker: StickerDao): Result[Unit] =
       dbContext.run(stickersTable.filter(_.id == lift(sticker.id)).update(lift(sticker))).unit
 
     override def delete(stickerId: StickerId): Result[Unit] =

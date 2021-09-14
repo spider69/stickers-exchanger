@@ -3,6 +3,7 @@ package org.yusupov.services
 import org.yusupov.database.dao.SessionDao
 import org.yusupov.database.repositories.{SessionsRepository, UsersRepository}
 import org.yusupov.database.services.TransactorService
+import org.yusupov.errors.{IncorrectUserPassword, UserNotExist}
 import org.yusupov.structures.{Password, Session, SessionId, User, UserId}
 import org.yusupov.utils.SecurityUtils
 import zio.interop.catz._
@@ -24,7 +25,7 @@ object UsersService {
     def getSession(sessionId: SessionId): RIO[TransactorService.DBTransactor, Option[Session]]
     def getSessions(userId: UserId): RIO[TransactorService.DBTransactor, List[Session]]
     def addSession(userId: UserId): RIO[TransactorService.DBTransactor with Random, SessionId]
-    def deleteSession(userId: UserId): RIO[TransactorService.DBTransactor, Unit]
+    def deleteSession(id: SessionId): RIO[TransactorService.DBTransactor, Unit]
   }
 
   class ServiceImpl(
@@ -44,9 +45,9 @@ object UsersService {
       for {
         transactor <- TransactorService.databaseTransactor
         userDao <- usersRepository.getByName(name).transact(transactor)
-        user <- ZIO.fromEither(userDao.toRight(new Exception(s"User with name=$name does not exist")))
+        user <- ZIO.fromEither(userDao.toRight(UserNotExist(name)))
         isPasswordCorrect <- ZIO.effect(SecurityUtils.checkSecret(password, user.salt, user.passwordHash))
-        user <- if(isPasswordCorrect) ZIO.succeed(user.toUser) else ZIO.fail(new Exception("Password is incorrect"))
+        user <- if(isPasswordCorrect) ZIO.succeed(user.toUser) else ZIO.fail(IncorrectUserPassword)
       } yield user
 
     override def addUser(user: User, password: Password): RIO[TransactorService.DBTransactor, Unit] =
@@ -83,10 +84,10 @@ object UsersService {
         _ <- sessionsRepository.insert(SessionDao(uuid, userId)).transact(transactor)
       } yield uuid
 
-    override def deleteSession(userId: UserId) =
+    override def deleteSession(id: SessionId) =
       for {
         transactor <- TransactorService.databaseTransactor
-        _ <- sessionsRepository.delete(userId).transact(transactor)
+        _ <- sessionsRepository.delete(id).transact(transactor)
       } yield ()
   }
 

@@ -2,11 +2,13 @@ package org.yusupov.services
 
 import org.yusupov.database.repositories.CollectionsRepository
 import org.yusupov.database.services.TransactorService
-import org.yusupov.structures.{Collection, CollectionId}
+import org.yusupov.structures.{Collection, CollectionId, CollectionInsertion}
 import zio.interop.catz._
 import zio.macros.accessible
 import zio.random.Random
 import zio.{Has, RIO, ZLayer}
+
+import java.util.UUID
 
 @accessible
 object CollectionsService {
@@ -14,8 +16,8 @@ object CollectionsService {
 
   trait Service {
     def getAll: RIO[TransactorService.DBTransactor, List[Collection]]
-    def insert(collection: Collection): RIO[TransactorService.DBTransactor with Random, CollectionId]
-    def delete(collectionId: CollectionId): RIO[TransactorService.DBTransactor, Unit]
+    def insert(collection: CollectionInsertion): RIO[TransactorService.DBTransactor with Random, CollectionId]
+    def delete(collectionId: String): RIO[TransactorService.DBTransactor, Unit]
   }
 
   class ServiceImpl(collectionsRepository: CollectionsRepository.Service) extends Service {
@@ -24,20 +26,22 @@ object CollectionsService {
     override def getAll: RIO[TransactorService.DBTransactor, List[Collection]] =
       for {
         transactor <- TransactorService.databaseTransactor
-        collections <- collectionsRepository.getAll.transact(transactor)
+        collectionsDao <- collectionsRepository.getAll.transact(transactor)
+        collections = collectionsDao.map(_.toCollection)
       } yield collections
 
-    override def insert(collection: Collection): RIO[TransactorService.DBTransactor with Random, CollectionId] =
+    override def insert(collection: CollectionInsertion): RIO[TransactorService.DBTransactor with Random, CollectionId] =
       for {
         transactor <- TransactorService.databaseTransactor
-        uuid <- zio.random.nextUUID.map(_.toString)
-        _ <- collectionsRepository.insert(collection.copy(id = uuid)).transact(transactor)
-      } yield uuid
+        collectionId <- zio.random.nextUUID
+        _ <- collectionsRepository.insert(collection.toDao(collectionId)).transact(transactor)
+      } yield collectionId
 
-    override def delete(collectionId: CollectionId): RIO[TransactorService.DBTransactor, Unit] =
+    override def delete(collectionId: String): RIO[TransactorService.DBTransactor, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
-        _ <- collectionsRepository.delete(collectionId).transact(transactor)
+        id = UUID.fromString(collectionId)
+        _ <- collectionsRepository.delete(id).transact(transactor)
       } yield ()
   }
 
