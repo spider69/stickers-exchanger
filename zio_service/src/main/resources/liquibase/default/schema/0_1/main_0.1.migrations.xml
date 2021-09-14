@@ -79,5 +79,40 @@
         />
 
     </changeSet>
+    
+    <changeSet id="create users entities" author="author">
+        <createTable tableName="UsersCollections">
+            <column name="userId" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PK_USERS_COLLECTIONS_TABLE"/>
+            </column>
+            <column name="collectionId" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PK_USERS_COLLECTIONS_TABLE"/>
+            </column>
+            <column name="stickerId" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="PK_USERS_COLLECTIONS_TABLE"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="UsersCollections"
+                                 baseColumnNames="userId"
+                                 constraintName="FK_USERS_COLLECTIONS_USERS"
+                                 referencedTableName="Users"
+                                 referencedColumnNames="id"
+        />
+
+        <addForeignKeyConstraint baseTableName="UsersCollections"
+                                 baseColumnNames="collectionId"
+                                 constraintName="FK_USERS_COLLECTIONS_COLLECTIONS"
+                                 referencedTableName="Collections"
+                                 referencedColumnNames="id"
+        />
+
+        <addForeignKeyConstraint baseTableName="UsersCollections"
+                                 baseColumnNames="stickerId"
+                                 constraintName="FK_USERS_COLLECTIONS_STICKERS"
+                                 referencedTableName="Stickers"
+                                 referencedColumnNames="id"
+        />
+    </changeSet>
 
 </databaseChangeLog>

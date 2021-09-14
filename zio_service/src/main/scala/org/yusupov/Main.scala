@@ -4,14 +4,23 @@ import cats.effect.{ExitCode => CatsExitCode}
 import org.http4s.blaze.server.BlazeServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.Router
-import org.yusupov.api.{AuthApi, CollectionsApi, StickersApi}
+import org.yusupov.api.{AuthApi, CollectionsApi, StickersApi, UsersCollectionsApi}
 import org.yusupov.config.ConfigService.Configuration
 import org.yusupov.config.{Config, ConfigService}
-import org.yusupov.database.repositories.{CollectionsRepository, SessionsRepository, StickersRepository, UsersRepository}
+import org.yusupov.database.repositories.CollectionsRepository.CollectionsRepository
+import org.yusupov.database.repositories.SessionsRepository.SessionsRepository
+import org.yusupov.database.repositories.StickersRepository.StickersRepository
+import org.yusupov.database.repositories.UsersCollectionsRepository.UsersCollectionsRepository
+import org.yusupov.database.repositories.UsersRepository.UsersRepository
+import org.yusupov.database.repositories.{CollectionsRepository, SessionsRepository, StickersRepository, UsersCollectionsRepository, UsersRepository}
 import org.yusupov.database.services.MigrationService.{Liqui, MigrationService}
 import org.yusupov.database.services.TransactorService.DBTransactor
 import org.yusupov.database.services.{MigrationService, TransactorService}
-import org.yusupov.services.{CollectionsService, StickersService, UsersService}
+import org.yusupov.services.CollectionsService.CollectionsService
+import org.yusupov.services.StickersService.StickersService
+import org.yusupov.services.UsersCollectionsService.UsersCollectionsService
+import org.yusupov.services.UsersService.UsersService
+import org.yusupov.services.{CollectionsService, StickersService, UsersCollectionsService, UsersService}
 import zio.blocking.Blocking
 import zio.clock.Clock
 import zio.interop.catz._
@@ -21,17 +30,19 @@ import zio.{RIO, ZIO}
 object Main extends zio.App {
 
   type AppEnvironment =
-    StickersService.StickersService with StickersRepository.StickersRepository with
-      CollectionsService.CollectionsService with CollectionsRepository.CollectionsRepository with
-      UsersService.UsersService with UsersRepository.UsersRepository with SessionsRepository.SessionsRepository with
+    StickersService with StickersRepository with
+      CollectionsService with CollectionsRepository with
+      UsersService with UsersRepository with SessionsRepository with
+      UsersCollectionsService with UsersCollectionsRepository with
       Configuration with Clock with Blocking with Random with
       Liqui with MigrationService with DBTransactor
 
   val appEnvironment =
     ConfigService.live >+> Blocking.live >+>
-    TransactorService.live >+> MigrationService.liquibaseLayer >+> MigrationService.live >+>
-    StickersRepository.live >+> StickersService.live >+>
-    CollectionsRepository.live >+> CollectionsService.live >+>
+      TransactorService.live >+> MigrationService.liquibaseLayer >+> MigrationService.live >+>
+      StickersRepository.live >+> StickersService.live >+>
+      UsersCollectionsRepository.live >+> UsersCollectionsService.live >+>
+      CollectionsRepository.live >+> CollectionsService.live >+>
       UsersRepository.live >+> SessionsRepository.live >+> UsersService.live
 
   type AppTask[A] = RIO[AppEnvironment, A]
@@ -39,7 +50,8 @@ object Main extends zio.App {
   val httpApp = Router[AppTask](
     "/stickers" -> new StickersApi().routes,
     "/collections" -> new CollectionsApi().routes,
-    "/auth" -> new AuthApi().routes
+    "/auth" -> new AuthApi().routes,
+    "/user" -> new UsersCollectionsApi().routes
   ).orNotFound
 
   val server = for {

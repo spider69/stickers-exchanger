@@ -11,4 +11,5 @@ package object errors {
   case class UserNotExist(name: String) extends Error(s"User with name=$name does not exist")
   case object IncorrectUserPassword extends Error("User password is incorrect")
 
+  case object StickerNotFound extends Error("Sticker not found")
 }
