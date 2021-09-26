@@ -1,0 +1,6 @@
+.bsp
+.idea
+target
+project/target
+project/project
+/zio_service/src/main/resources/web/

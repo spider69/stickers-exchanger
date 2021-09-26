@@ -1,0 +1,17 @@
+export function onError(error) {
+    let message = error.toString();
+  
+    // Auth errors
+    if (!(error instanceof Error) && error.message) {
+      message = error.message;
+    }
+  
+    alert(message);
+  }
+
+export function handleErrors(response) {
+  if (!response.ok) {
+    throw Error(response.statusText);
+  }
+  return response;
+}

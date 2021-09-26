@@ -1,0 +1,32 @@
+.form {
+  text-align: left;
+}
+  
+.form h3 {
+  font-size: 50px;
+  margin: 0 0 20px;
+}
+
+.form h2 {
+  font-size: 25px;
+  margin: 0 0 12px;
+}
+  
+.form strong {
+  display: block;
+  font-size: 30px;
+  opacity: 0.4;
+  margin-bottom: 6px;
+}
+
+.info {
+  display:flex;
+}
+
+.left {
+  width:33.33vw;
+}
+
+.right {
+  width:33.33vw;
+}
