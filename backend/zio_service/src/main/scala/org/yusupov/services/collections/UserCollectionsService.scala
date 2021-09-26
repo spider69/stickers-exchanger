@@ -4,8 +4,6 @@ import org.yusupov.database.repositories.collections.UserCollectionsRepository
 import org.yusupov.database.repositories.collections.UserCollectionsRepository.UserCollectionsRepository
 import org.yusupov.database.services.TransactorService
 import org.yusupov.database.services.TransactorService.DBTransactor
-import org.yusupov.services.stickers.UserStickersService
-import org.yusupov.services.stickers.UserStickersService.UserStickersService
 import org.yusupov.structures.UserId
 import org.yusupov.structures.collections.{Collection, UserCollectionRelation}
 import zio.interop.catz._
@@ -13,7 +11,6 @@ import zio.macros.accessible
 import zio.{Has, RIO, RLayer, ZIO, ZLayer}
 
 import java.util.UUID
-import scala.util.Try
 
 @accessible
 object UserCollectionsService {
@@ -27,7 +24,7 @@ object UserCollectionsService {
 
     def getUserCollectionsRelations(userId: String): RIO[DBTransactor, List[UserCollectionRelation]]
 
-    def deleteUserCollection(userId: UserId, collectionId: String): RIO[DBTransactor with UserStickersService, Unit]
+    def deleteUserCollection(userId: UserId, collectionId: String): RIO[DBTransactor, Unit]
   }
 
   class ServiceImpl(
@@ -63,7 +60,6 @@ object UserCollectionsService {
       for {
         transactor <- TransactorService.databaseTransactor
         id <- ZIO.effect(UUID.fromString(collectionId))
-        _ <- UserStickersService.deleteUserCollectionStickers(userId, collectionId)
         _ <- userCollectionsRepository.deleteCollection(userId, id).transact(transactor)
       } yield ()
   }

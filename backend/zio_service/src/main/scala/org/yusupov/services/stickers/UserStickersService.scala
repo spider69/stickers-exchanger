@@ -1,13 +1,13 @@
 package org.yusupov.services.stickers
 
-import org.yusupov.database.repositories.collections.UserCollectionsRepository
-import org.yusupov.database.repositories.collections.UserCollectionsRepository.UserCollectionsRepository
 import org.yusupov.database.repositories.stickers.StickersRepository.StickersRepository
 import org.yusupov.database.repositories.stickers.UserStickersRepository.UserStickersRepository
 import org.yusupov.database.repositories.stickers.{StickersRepository, UserStickersRepository}
 import org.yusupov.database.services.TransactorService
 import org.yusupov.database.services.TransactorService.DBTransactor
 import org.yusupov.errors.{BadStickersCount, StickerNotFound}
+import org.yusupov.services.collections.UserCollectionsService
+import org.yusupov.services.collections.UserCollectionsService.UserCollectionsService
 import org.yusupov.structures.UserId
 import org.yusupov.structures.auth.User
 import org.yusupov.structures.stickers.{Sticker, UserStickerRelation}
@@ -16,7 +16,6 @@ import zio.macros.accessible
 import zio.{Has, RIO, RLayer, ZIO, ZLayer}
 
 import java.util.UUID
-import scala.util.Try
 
 @accessible
 object UserStickersService {
@@ -24,7 +23,7 @@ object UserStickersService {
   type UserStickersService = Has[Service]
 
   trait Service {
-    def addUserSticker(userId: UserId, stickerId: String, count: Int): RIO[DBTransactor, Unit]
+    def addUserSticker(userId: UserId, stickerId: String, count: Int): RIO[DBTransactor with UserCollectionsService, Unit]
 
     def getUserStickers(userId: UserId, collectionId: String): RIO[DBTransactor, List[Sticker]]
 
@@ -41,19 +40,18 @@ object UserStickersService {
 
   class ServiceImpl(
     stickersRepository: StickersRepository.Service,
-    userCollectionsRepository: UserCollectionsRepository.Service,
     userStickersRepository: UserStickersRepository.Service
   ) extends Service {
 
     import doobie.implicits._
 
-    override def addUserSticker(userId: UserId, stickerId: String, count: Int): RIO[DBTransactor, Unit] =
+    override def addUserSticker(userId: UserId, stickerId: String, count: Int): RIO[DBTransactor with UserCollectionsService, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
         id <- ZIO.effect(UUID.fromString(stickerId))
         stickerOpt <- stickersRepository.get(id).transact(transactor)
         sticker <- ZIO.fromOption(stickerOpt).orElseFail(StickerNotFound)
-        _ <- userCollectionsRepository.addCollection(userId, sticker.collectionId).transact(transactor)
+        _ <- UserCollectionsService.addUserCollection(userId, sticker.collectionId.toString)
         _ <- userStickersRepository.addSticker(userId, sticker, count).transact(transactor)
       } yield ()
 
@@ -105,8 +103,8 @@ object UserStickersService {
       } yield ()
   }
 
-  lazy val live: RLayer[StickersRepository with UserStickersRepository with UserCollectionsRepository, UserStickersService] =
-    ZLayer.fromServices[StickersRepository.Service, UserCollectionsRepository.Service, UserStickersRepository.Service, UserStickersService.Service] {
-      (stickersRepo, userCollectionsRepo, userStickersRepo) => new ServiceImpl(stickersRepo, userCollectionsRepo, userStickersRepo)
+  lazy val live: RLayer[StickersRepository with UserStickersRepository, UserStickersService] =
+    ZLayer.fromServices[StickersRepository.Service, UserStickersRepository.Service, UserStickersService.Service] {
+      (stickersRepo, userStickersRepo) => new ServiceImpl(stickersRepo, userStickersRepo)
     }
 }

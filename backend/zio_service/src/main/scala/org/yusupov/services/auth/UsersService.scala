@@ -13,7 +13,6 @@ import zio.random.Random
 import zio.{Has, RIO, RLayer, ZIO, ZLayer}
 
 import java.util.UUID
-import scala.util.Try
 
 @accessible
 object UsersService {

@@ -3,13 +3,14 @@ package org.yusupov.api.stickers
 import io.circe.generic.auto._
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.yusupov.api.Api
+import org.yusupov.services.collections.UserCollectionsService.UserCollectionsService
 import org.yusupov.services.stickers.UserStickersService
 import org.yusupov.services.stickers.UserStickersService.UserStickersService
 import org.yusupov.structures.auth.UserWithSession
 import zio.interop.catz._
 import zio.logging._
 
-class UserStickersApi[R <: Api.DefaultApiEnv with UserStickersService] extends Api[R] {
+class UserStickersApi[R <: Api.DefaultApiEnv with UserStickersService with UserCollectionsService] extends Api[R] {
 
   import dsl._
 
