@@ -75,7 +75,7 @@ export default function CollectionPage() {
         }
 
         onLoad();
-    }, [id]);
+    }, [id, userId]);
 
     async function onAddSticker(stickerId) {
         try {

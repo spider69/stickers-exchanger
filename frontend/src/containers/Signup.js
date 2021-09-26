@@ -1,13 +1,11 @@
 import React, { useState } from "react";
 import { FormGroup, FormControl, FormLabel } from "react-bootstrap";
 import LoaderButton from "../components/LoaderButton";
-import { useHistory } from "react-router-dom";
 import { useFormFields } from "../libs/hooksLib";
 import { onError } from "../libs/errorLib";
 import "./Signup.css";
 
 export default function Signup() {
-    const history = useHistory();
     const [fields, handleFieldChange] = useFormFields({
         userName: "",
         email: "",
