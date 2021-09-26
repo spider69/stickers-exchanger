@@ -39,14 +39,14 @@ object UserCollectionsService {
     override def addUserCollection(userId: UserId, collectionId: String) =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        id <- ZIO.effect(UUID.fromString(collectionId))
         _ <- userCollectionsRepository.addCollection(userId, id).transact(transactor)
       } yield ()
 
     override def getUserCollections(userId: String) =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(userId)))
+        id <- ZIO.effect(UUID.fromString(userId))
         collectionsDao <- userCollectionsRepository.getCollections(id).transact(transactor)
         collections = collectionsDao.map(_.toCollection)
       } yield collections
@@ -54,7 +54,7 @@ object UserCollectionsService {
     override def getUserCollectionsRelations(userId: String) =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(userId)))
+        id <- ZIO.effect(UUID.fromString(userId))
         collectionsRelationsDao <- userCollectionsRepository.getCollectionsRelations(id).transact(transactor)
         collectionsRelations = collectionsRelationsDao.map(_.toUserCollectionRelation)
       } yield collectionsRelations
@@ -62,7 +62,7 @@ object UserCollectionsService {
     override def deleteUserCollection(userId: UserId, collectionId: String) =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        id <- ZIO.effect(UUID.fromString(collectionId))
         _ <- UserStickersService.deleteUserCollectionStickers(userId, collectionId)
         _ <- userCollectionsRepository.deleteCollection(userId, id).transact(transactor)
       } yield ()

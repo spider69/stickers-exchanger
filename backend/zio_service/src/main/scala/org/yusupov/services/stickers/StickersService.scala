@@ -35,7 +35,7 @@ object StickersService {
     override def get(stickerId: String): RIO[TransactorService.DBTransactor, Sticker] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(stickerId)))
+        id <- ZIO.effect(UUID.fromString(stickerId))
         stickerDao <- stickersRepository.get(id).transact(transactor)
         sticker <- ZIO.fromEither(stickerDao.map(_.toSticker).toRight(StickerNotFound))
       } yield sticker
@@ -43,7 +43,7 @@ object StickersService {
     override def getForCollection(collectionId: String): RIO[TransactorService.DBTransactor, List[Sticker]] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        id <- ZIO.effect(UUID.fromString(collectionId))
         stickersDao <- stickersRepository.getAll(id).transact(transactor)
         stickers = stickersDao.map(_.toSticker)
       } yield stickers
@@ -52,14 +52,14 @@ object StickersService {
       for {
         transactor <- TransactorService.databaseTransactor
         stickerId <- zio.random.nextUUID
-        collectionId <- ZIO.fromTry(Try(UUID.fromString(collectionIdAsString)))
+        collectionId <- ZIO.effect(UUID.fromString(collectionIdAsString))
         _ <- stickersRepository.insert(List(sticker.toDao(stickerId, collectionId))).transact(transactor)
       } yield stickerId
 
     override def delete(stickerId: String): RIO[TransactorService.DBTransactor, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(stickerId)))
+        id <- ZIO.effect(UUID.fromString(stickerId))
         _ <- stickersRepository.delete(id).transact(transactor)
       } yield ()
   }

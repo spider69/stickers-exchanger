@@ -57,7 +57,7 @@ object UsersService {
     override def getUser(id: String): RIO[TransactorService.DBTransactor, User] =
       for {
         transactor <- TransactorService.databaseTransactor
-        userId <- ZIO.fromTry(Try(UUID.fromString(id)))
+        userId <- ZIO.effect(UUID.fromString(id))
         userDao <- usersRepository.get(userId).transact(transactor)
         user <- ZIO.fromEither(userDao.map(_.toUser).toRight(UserNotFound))
       } yield user
@@ -87,7 +87,7 @@ object UsersService {
     override def getSession(sessionId: String) =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(sessionId)))
+        id <- ZIO.effect(UUID.fromString(sessionId))
         sessionDto <- sessionsRepository.get(id).transact(transactor)
         session <- ZIO.fromEither(sessionDto.map(_.toSession).toRight(SessionNotFound))
       } yield session

@@ -10,7 +10,6 @@ import zio.random.Random
 import zio.{Has, RIO, ZIO, ZLayer}
 
 import java.util.UUID
-import scala.util.Try
 
 @accessible
 object CollectionsService {
@@ -33,7 +32,7 @@ object CollectionsService {
     override def get(collectionId: String): RIO[TransactorService.DBTransactor, Collection] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        id <- ZIO.effect(UUID.fromString(collectionId))
         collectionDao <- collectionsRepository.get(id).transact(transactor)
         collection <- ZIO.fromEither(collectionDao.map(_.toCollection).toRight(CollectionNotFound))
       } yield collection
@@ -55,7 +54,7 @@ object CollectionsService {
     override def delete(collectionId: String): RIO[TransactorService.DBTransactor, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        id <- ZIO.effect(UUID.fromString(collectionId))
         _ <- collectionsRepository.delete(id).transact(transactor)
       } yield ()
   }

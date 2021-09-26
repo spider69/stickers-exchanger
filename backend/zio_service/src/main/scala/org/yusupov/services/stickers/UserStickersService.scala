@@ -50,7 +50,7 @@ object UserStickersService {
     override def addUserSticker(userId: UserId, stickerId: String, count: Int): RIO[DBTransactor, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(stickerId)))
+        id <- ZIO.effect(UUID.fromString(stickerId))
         stickerOpt <- stickersRepository.get(id).transact(transactor)
         sticker <- ZIO.fromOption(stickerOpt).orElseFail(StickerNotFound)
         _ <- userCollectionsRepository.addCollection(userId, sticker.collectionId).transact(transactor)
@@ -60,7 +60,7 @@ object UserStickersService {
     override def getUserStickers(userId: UserId, collectionId: String): RIO[DBTransactor, List[Sticker]] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        id <- ZIO.effect(UUID.fromString(collectionId))
         stickersDao <- userStickersRepository.getStickers(userId, id).transact(transactor)
         stickers = stickersDao.map(_.toSticker)
       } yield stickers
@@ -68,8 +68,8 @@ object UserStickersService {
     override def getUserStickersRelations(userId: String, collectionId: String): RIO[DBTransactor, List[UserStickerRelation]] =
       for {
         transactor <- TransactorService.databaseTransactor
-        uId <- ZIO.fromTry(Try(UUID.fromString(userId)))
-        colId <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        uId <- ZIO.effect(UUID.fromString(userId))
+        colId <- ZIO.effect(UUID.fromString(collectionId))
         stickerRelationsDao <- userStickersRepository.getStickersRelations(uId, colId).transact(transactor)
         stickersRelations = stickerRelationsDao.map(_.toUserStickerRelation)
       } yield stickersRelations
@@ -77,7 +77,7 @@ object UserStickersService {
     override def getUsersBySticker(stickerId: String): RIO[DBTransactor, List[User]] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(stickerId)))
+        id <- ZIO.effect(UUID.fromString(stickerId))
         usersDao <- userStickersRepository.getUsersBySticker(id).transact(transactor)
         users = usersDao.map(_.toUser)
       } yield users
@@ -86,21 +86,21 @@ object UserStickersService {
       for {
         _ <- ZIO.when(count < 0)(ZIO.fail(BadStickersCount))
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(stickerId)))
+        id <- ZIO.effect(UUID.fromString(stickerId))
         _ <- userStickersRepository.updateStickerExchangeInfo(userId, id, count).transact(transactor)
       } yield ()
 
     override def deleteUserSticker(userId: UserId, stickerId: String): RIO[DBTransactor, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(stickerId)))
+        id <- ZIO.effect(UUID.fromString(stickerId))
         _ <- userStickersRepository.deleteSticker(userId, id).transact(transactor)
       } yield ()
 
     override def deleteUserCollectionStickers(userId: UserId, collectionId: String): RIO[DBTransactor, Unit] =
       for {
         transactor <- TransactorService.databaseTransactor
-        id <- ZIO.fromTry(Try(UUID.fromString(collectionId)))
+        id <- ZIO.effect(UUID.fromString(collectionId))
         _ <- userStickersRepository.deleteCollectionStickers(userId, id).transact(transactor)
       } yield ()
   }
