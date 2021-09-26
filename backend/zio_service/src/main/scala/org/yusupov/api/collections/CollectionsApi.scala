@@ -3,20 +3,14 @@ package org.yusupov.api.collections
 import io.circe.generic.auto._
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.yusupov.api.Api
-import org.yusupov.config.ConfigService.Configuration
-import org.yusupov.database.services.TransactorService.DBTransactor
-import org.yusupov.logging.LoggerService.LoggerService
-import org.yusupov.services.collections.CollectionsService.CollectionsService
-import org.yusupov.services.auth.UsersService.UsersService
 import org.yusupov.services.collections.CollectionsService
+import org.yusupov.services.collections.CollectionsService.CollectionsService
 import org.yusupov.structures.auth.UserWithSession
 import org.yusupov.structures.collections.CollectionInsertion
-import zio.console.Console
 import zio.interop.catz._
-import zio.random.Random
 import zio.logging._
 
-class CollectionsApi[R <: CollectionsService with DBTransactor with UsersService with Random with Console with Configuration with LoggerService] extends Api[R] {
+class CollectionsApi[R <: Api.DefaultApiEnv with CollectionsService] extends Api[R] {
 
   import dsl._
 

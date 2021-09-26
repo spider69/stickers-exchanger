@@ -2,19 +2,11 @@ package org.yusupov.api.ui
 
 import org.http4s.{HttpRoutes, Request, StaticFile}
 import org.yusupov.api.Api
-import org.yusupov.config.ConfigService.Configuration
-import org.yusupov.database.services.TransactorService
-import org.yusupov.database.services.TransactorService.DBTransactor
-import org.yusupov.logging.LoggerService.LoggerService
-import org.yusupov.services.auth.UsersService
-import org.yusupov.services.auth.UsersService.UsersService
 import zio.blocking.Blocking
 import zio.clock.Clock
-import zio.console.Console
 import zio.interop.catz._
-import zio.random.Random
 
-class UiApi[R <: Clock with Blocking with UsersService with DBTransactor with Random with Console with Configuration with LoggerService] extends Api[R] {
+class UiApi[R <: Api.DefaultApiEnv with Clock with Blocking] extends Api[R] {
 
   import dsl._
 

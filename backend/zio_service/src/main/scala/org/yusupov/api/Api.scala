@@ -21,9 +21,14 @@ import zio.console.Console
 import zio.interop.catz._
 import zio.random.Random
 import zio.{RIO, ZIO}
-import zio.logging._
 
-trait Api[R <: UsersService with DBTransactor with Random with Console with Configuration with LoggerService] {
+object Api {
+  type DefaultApiEnv = UsersService with DBTransactor with Random with Console with Configuration with LoggerService
+}
+
+import Api._
+
+trait Api[R <: DefaultApiEnv] {
 
   type ApiTask[A] = RIO[R, A]
 

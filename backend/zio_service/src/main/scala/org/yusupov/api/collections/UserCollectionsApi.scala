@@ -3,29 +3,14 @@ package org.yusupov.api.collections
 import io.circe.generic.auto._
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.yusupov.api.Api
-import org.yusupov.config.ConfigService.Configuration
-import org.yusupov.database.services.TransactorService.DBTransactor
-import org.yusupov.logging.LoggerService.LoggerService
-import org.yusupov.services.collections.UserCollectionsService.UserCollectionsService
-import org.yusupov.services.auth.UsersService.UsersService
 import org.yusupov.services.collections.UserCollectionsService
+import org.yusupov.services.collections.UserCollectionsService.UserCollectionsService
 import org.yusupov.services.stickers.UserStickersService.UserStickersService
 import org.yusupov.structures.auth.UserWithSession
-import zio.console.Console
 import zio.interop.catz._
 import zio.logging.log
-import zio.random.Random
 
-object UserCollectionsApi {
-  type ApiEnv =
-    UserStickersService with UserCollectionsService with
-      DBTransactor with UsersService with
-      Random with Console with Configuration with LoggerService
-}
-
-import UserCollectionsApi._
-
-class UserCollectionsApi[R <: ApiEnv] extends Api[R] {
+class UserCollectionsApi[R <: Api.DefaultApiEnv with UserStickersService with UserCollectionsService] extends Api[R] {
 
   import dsl._
 

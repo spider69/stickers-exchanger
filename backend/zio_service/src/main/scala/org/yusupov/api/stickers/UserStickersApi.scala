@@ -3,19 +3,13 @@ package org.yusupov.api.stickers
 import io.circe.generic.auto._
 import org.http4s.{AuthedRoutes, HttpRoutes}
 import org.yusupov.api.Api
-import org.yusupov.config.ConfigService.Configuration
-import org.yusupov.database.services.TransactorService.DBTransactor
-import org.yusupov.logging.LoggerService.LoggerService
-import org.yusupov.services.stickers.UserStickersService.UserStickersService
-import org.yusupov.services.auth.UsersService.UsersService
 import org.yusupov.services.stickers.UserStickersService
+import org.yusupov.services.stickers.UserStickersService.UserStickersService
 import org.yusupov.structures.auth.UserWithSession
-import zio.console.Console
 import zio.interop.catz._
-import zio.random.Random
 import zio.logging._
 
-class UserStickersApi[R <: UserStickersService with DBTransactor with UsersService with Random with Console with Configuration with LoggerService] extends Api[R] {
+class UserStickersApi[R <: Api.DefaultApiEnv with UserStickersService] extends Api[R] {
 
   import dsl._
 
