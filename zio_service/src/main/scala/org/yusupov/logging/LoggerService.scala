@@ -12,7 +12,7 @@ object LoggerService {
   val live: RLayer[Console with Clock, LoggerService] =
     Logging.console(
       logLevel = LogLevel.Info,
-      format = LogFormat.ColoredLogFormat()
+      format = LogFormat.SimpleConsoleLogFormat()
     ) >>> Logging.withRootLoggerName("stickers-exchanger")
 
 }
