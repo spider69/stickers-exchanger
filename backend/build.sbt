@@ -4,14 +4,17 @@ ThisBuild / scalacOptions += "-Ymacro-annotations"
 
 ThisBuild / scalaVersion := "2.13.6"
 
+ThisBuild / version := "1.0.0"
+
 lazy val backend = (project in file("."))
   .aggregate(
-    zio_service
+    stickers_exchanger
   )
 
-lazy val zio_service = (project in file("zio_service"))
+lazy val stickers_exchanger = (project in file("zio_service"))
+  .enablePlugins(JavaAppPackaging)
   .settings(
-    name := "zio_service",
+    name := "stickers_exchanger",
     libraryDependencies ++= Seq(
       logback,
       zio,
