@@ -24,12 +24,19 @@ object TransactorService {
     connectEc: ExecutionContext
   ): Managed[Throwable, Transactor[Task]] = conf.herokuUrl match {
     case Some(url) =>
-      val databaseUrl = "jdbc:" + url.replaceFirst("postgres", "postgresql")
+      val databaseUrlWithUser = url.replaceFirst("postgres://", "")
+      val splitUrl = databaseUrlWithUser.split("@")
+      val splitUser = splitUrl(0).split(":")
+
+      val databaseUrl = "jdbc:postgresql://" + splitUrl(1)
+      val user = splitUser(0)
+      val password = splitUser(1)
+
       HikariTransactor.newHikariTransactor[Task](
         conf.driver,
         databaseUrl,
-        "",
-        "",
+        user,
+        password,
         connectEc
       ).toManagedZIO
     case _ =>
