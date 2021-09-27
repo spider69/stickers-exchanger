@@ -1,0 +1,1 @@
+web: target/universal/stage/bin/stickers_exchanger -Dapi.port=$PORT
