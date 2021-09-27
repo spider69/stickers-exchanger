@@ -20,14 +20,14 @@ class StickersApi[R <: Api.DefaultApiEnv with StickersService] extends Api[R] {
     case GET -> Root / stickerId as UserWithSession(_, session) =>
       log.info("Get sticker by id") *>
         StickersService.get(stickerId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case GET -> Root :? CollectionIdParamMatcher(collectionId) as UserWithSession(_, session)  =>
       log.info("Get stickers by collection") *>
         StickersService.getForCollection(collectionId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
@@ -39,14 +39,14 @@ class StickersApi[R <: Api.DefaultApiEnv with StickersService] extends Api[R] {
       } yield result
 
       handleRequest.foldM(
-        e => log.error(e.getMessage) *> BadRequest(e.getMessage),
+        errorToResultCode,
         result => okWithCookie(result, session.id)
       )
 
     case DELETE -> Root / stickerId as UserWithSession(_, session) =>
       log.info("Delete sticker") *>
         StickersService.delete(stickerId).foldM(
-          e => log.error(e.getMessage) *> BadRequest(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
   }

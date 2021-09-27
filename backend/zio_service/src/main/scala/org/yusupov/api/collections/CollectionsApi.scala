@@ -18,14 +18,14 @@ class CollectionsApi[R <: Api.DefaultApiEnv with CollectionsService] extends Api
     case GET -> Root / collectionId as UserWithSession(_, session) =>
       log.info("Get collection by id") *>
         CollectionsService.get(collectionId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case GET -> Root as UserWithSession(_, session) =>
       log.info("Get all collections") *>
         CollectionsService.getAll.foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
@@ -37,14 +37,14 @@ class CollectionsApi[R <: Api.DefaultApiEnv with CollectionsService] extends Api
       } yield result
 
       handleRequest.foldM(
-        e => log.error(e.getMessage) *> BadRequest(e.getMessage),
+        errorToResultCode,
         result => okWithCookie(result, session.id)
       )
 
     case DELETE -> Root / collectionId as UserWithSession(_, session) =>
       log.info("Delete collection") *>
         CollectionsService.delete(collectionId).foldM(
-          e => log.error(e.getMessage) *> BadRequest(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
   }

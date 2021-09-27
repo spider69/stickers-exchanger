@@ -28,7 +28,7 @@ object Api {
 
 import Api._
 
-trait Api[R <: DefaultApiEnv] {
+trait Api[R <: DefaultApiEnv] extends ErrorsMarshaller[R] {
 
   type ApiTask[A] = RIO[R, A]
 

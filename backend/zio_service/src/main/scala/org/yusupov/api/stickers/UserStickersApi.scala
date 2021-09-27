@@ -21,42 +21,42 @@ class UserStickersApi[R <: Api.DefaultApiEnv with UserStickersService with UserC
     case PUT -> Root  / "update" / stickerId :? CountParamMatcher(count) as UserWithSession(user, session) =>
       log.info("Update user sticker count") *>
         UserStickersService.updateStickersCount(user.id, stickerId, count).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case GET -> Root :? CollectionIdParamMatcher(collectionId) as UserWithSession(user, session) =>
       log.info("Get user stickers by collection") *>
         UserStickersService.getUserStickers(user.id, collectionId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case GET -> Root / "users_by" / stickerId as UserWithSession(_, session) =>
       log.info("Get users having sticker") *>
         UserStickersService.getUsersBySticker(stickerId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case GET -> Root / "relations" :? CollectionIdParamMatcher(collectionId) +& UserIdParamMatcher(userId) as UserWithSession(_, session) =>
       log.info("Get user stickers relations") *>
         UserStickersService.getUserStickersRelations(userId, collectionId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case PUT -> Root / stickerId :? CountParamMatcher(count) as UserWithSession(user, session) =>
       log.info("Add user sticker") *>
         UserStickersService.addUserSticker(user.id, stickerId, count).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case DELETE -> Root / stickerId as UserWithSession(user, session) =>
       log.info("Delete user sticker") *>
         UserStickersService.deleteUserSticker(user.id, stickerId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
   }

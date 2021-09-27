@@ -17,28 +17,28 @@ class UserCollectionsApi[R <: Api.DefaultApiEnv with UserCollectionsService] ext
     case GET -> Root / "relations" :? UserIdParamMatcher(userId) as UserWithSession(_, session) =>
       log.info("Get user collections relations") *>
         UserCollectionsService.getUserCollectionsRelations(userId).foldM(
-          e => log.error(e.getMessage) *> BadRequest(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case GET -> Root :? UserIdParamMatcher(userId) as UserWithSession(_, session) =>
       log.info("Get user collections") *>
         UserCollectionsService.getUserCollections(userId).foldM(
-          e => log.error(e.getMessage) *> NotFound(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case PUT -> Root / collectionId as UserWithSession(user, session) =>
       log.info("Add user collection") *>
         UserCollectionsService.addUserCollection(user.id, collectionId).foldM(
-          e => log.error(e.getMessage) *> BadRequest(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
 
     case DELETE -> Root / collectionId as UserWithSession(user, session) =>
       log.info("Delete user collection") *>
         UserCollectionsService.deleteUserCollection(user.id, collectionId).foldM(
-          e => log.error(e.getMessage) *> BadRequest(e.getMessage),
+          errorToResultCode,
           result => okWithCookie(result, session.id)
         )
   }

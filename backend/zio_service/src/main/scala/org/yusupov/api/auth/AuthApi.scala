@@ -29,7 +29,7 @@ class AuthApi[R <: Api.DefaultApiEnv] extends Api[R] {
       } yield (id, sessionId)
 
       requestHandler.foldM(
-        err => log.error(err.getMessage) *> BadRequest(err.getMessage),
+        errorToResultCode,
         { case (userId, sessionId) => okWithCookie(userId, sessionId) }
       )
 
@@ -43,7 +43,7 @@ class AuthApi[R <: Api.DefaultApiEnv] extends Api[R] {
       } yield (user.id, sessionId)
 
       requestHandler.foldM(
-        err => log.error(err.getMessage) *> BadRequest(err.getMessage),
+        errorToResultCode,
         { case (userId, sessionId) => okWithCookie(userId, sessionId) }
       )
 
@@ -55,7 +55,7 @@ class AuthApi[R <: Api.DefaultApiEnv] extends Api[R] {
       } yield session
 
       requestHandler.foldM(
-        err => log.error(err.getMessage) *> BadRequest(err.getMessage),
+        errorToResultCode,
         session => okWithCookie(session.userId, session.id)
       )
   }
@@ -64,20 +64,20 @@ class AuthApi[R <: Api.DefaultApiEnv] extends Api[R] {
     case GET -> Root / "users" as UserWithSession(user, session) =>
       log.info("Get users") *>
       UsersService.getUsers(Some(user.id)).foldM(
-        e => log.error(e.getMessage) *> NotFound(e.getMessage),
+        errorToResultCode,
         result => okWithCookie(result, session.id)
       )
 
     case GET -> Root / "user" / userId as UserWithSession(_, session) =>
       log.info("Get user") *> UsersService.getUser(userId).foldM(
-        e => log.error(e.getMessage) *> NotFound(e.getMessage),
+        errorToResultCode,
         result => okWithCookie(result, session.id)
       )
 
     case DELETE -> Root / "sign_out" as UserWithSession(user, session) =>
       log.info("Sign out") *>
       UsersService.deleteSession(session.id).foldM(
-        err => log.error(err.getMessage) *> BadRequest(err.getMessage),
+        errorToResultCode,
         result => Ok(result)
       ) <* log.info(s"User ${user.name} signed out successfully")
   }
