@@ -22,14 +22,26 @@ object TransactorService {
   private def makeTransactor(
     conf: DatabaseConfig,
     connectEc: ExecutionContext
-  ): Managed[Throwable, Transactor[Task]] =
-    HikariTransactor.newHikariTransactor[Task](
-      conf.driver,
-      conf.url,
-      conf.user,
-      conf.password,
-      connectEc
-    ).toManagedZIO
+  ): Managed[Throwable, Transactor[Task]] = conf.herokuUrl match {
+    case Some(url) =>
+      val databaseUrl = "jdbc:" + url.replaceFirst("postgres", "postgresql")
+      HikariTransactor.newHikariTransactor[Task](
+        conf.driver,
+        databaseUrl,
+        "",
+        "",
+        connectEc
+      ).toManagedZIO
+    case _ =>
+      HikariTransactor.newHikariTransactor[Task](
+        conf.driver,
+        conf.url,
+        conf.user,
+        conf.password,
+        connectEc
+      ).toManagedZIO
+
+  }
 
   def databaseTransactor: URIO[DBTransactor, Transactor[Task]] = ZIO.service[Transactor[Task]]
 

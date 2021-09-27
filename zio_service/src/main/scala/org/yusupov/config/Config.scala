@@ -14,7 +14,8 @@ case class DatabaseConfig(
   driver: String,
   url: String,
   user: String,
-  password: String
+  password: String,
+  herokuUrl: Option[String]
 )
 
 case class Config(
