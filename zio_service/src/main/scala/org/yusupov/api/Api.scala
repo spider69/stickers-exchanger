@@ -47,7 +47,7 @@ trait Api[R <: DefaultApiEnv] extends ErrorsMarshaller[R] {
         name = "ssid",
         content = sessionId.toString,
         path = Some("/"),
-        domain = Some(config.api.cookieDomain)
+        domain = config.api.cookieDomain
       )))
     } yield result
 

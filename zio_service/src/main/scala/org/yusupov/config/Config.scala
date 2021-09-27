@@ -3,7 +3,7 @@ package org.yusupov.config
 case class ApiConfig(
   host: String,
   port: Int,
-  cookieDomain: String
+  cookieDomain: Option[String]
 )
 
 case class LiquibaseConfig(
