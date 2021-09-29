@@ -22,10 +22,11 @@ import org.yusupov.services.auth.UsersService.UsersService
 import org.yusupov.services.collections.CollectionsService.CollectionsService
 import org.yusupov.services.collections.UserCollectionsService.UserCollectionsService
 import org.yusupov.services.collections.{CollectionsService, UserCollectionsService}
+import org.yusupov.services.search.SearchService
+import org.yusupov.services.search.SearchService.SearchService
 import org.yusupov.services.stickers.StickersService.StickersService
 import org.yusupov.services.stickers.UserStickersService.UserStickersService
 import org.yusupov.services.stickers.{StickersService, UserStickersService}
-import zio.{Has, ZLayer}
 import zio.blocking.Blocking
 import zio.clock.Clock
 import zio.console.Console
@@ -38,7 +39,7 @@ trait Environment {
       CollectionsService with CollectionsRepository with
       UsersService with UsersRepository with SessionsRepository with
       UserCollectionsService with UserCollectionsRepository with
-      UserStickersService with UserStickersRepository with
+      UserStickersService with UserStickersRepository with SearchService with
       Configuration with Clock with Blocking with Random with Console with
       Liqui with MigrationService with DBTransactor with DataGenerationService with LoggerService
 
@@ -50,6 +51,6 @@ trait Environment {
       StickersRepository.live >+> StickersService.live >+>
       UserCollectionsRepository.live >+> UserStickersRepository.live >+>
       UserCollectionsService.live >+> UserStickersService.live >+>
-      UsersRepository.live >+> SessionsRepository.live >+> UsersService.live >+> DataGenerationService.live
+      UsersRepository.live >+> SessionsRepository.live >+> UsersService.live >+> DataGenerationService.live >+> SearchService.live
 
 }

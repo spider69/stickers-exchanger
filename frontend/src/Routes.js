@@ -11,6 +11,7 @@ import CollectionPage from "./containers/CollectionPage";
 import StickerPage from "./containers/StickerPage";
 import UserPage from "./containers/UserPage";
 import Users from "./containers/Users";
+import ExchangesPage from "./containers/ExchangesPage";
 
 export default function Routes() {
     return (
@@ -18,6 +19,9 @@ export default function Routes() {
             <Route exact path="/">
                 <Home />
             </Route>
+            <AuthenticatedRoute exact path="/exchanges">
+                <ExchangesPage />
+            </AuthenticatedRoute>
             <AuthenticatedRoute exact path="/collections">
                 <Collections />
             </AuthenticatedRoute>

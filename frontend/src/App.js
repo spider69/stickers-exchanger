@@ -44,6 +44,10 @@ function App() {
     history.push(`/collections?userId=${userId.replace(/"/g, "")}`)
   }
 
+  function handleExchanges() {
+    history.push(`/exchanges`)
+  }
+
   async function handleLogout() {
     await fetch(`${window.location.origin}/api/auth/sign_out`, { method: 'DELETE' }).then(handleErrors);
     setUserId(null);
@@ -60,6 +64,7 @@ function App() {
             ? <>
               <Nav.Link onClick={handleUsers}><h3>Users</h3></Nav.Link>
               <Nav.Link onClick={handleCollections}><h3>Collections</h3></Nav.Link>
+              <Nav.Link onClick={handleExchanges}><h3>Exchanges</h3></Nav.Link>
               <Nav.Link onClick={handleLogout}><h3>Logout</h3></Nav.Link>
             </>
             : <>

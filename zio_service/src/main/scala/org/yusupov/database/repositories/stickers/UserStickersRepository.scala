@@ -1,11 +1,11 @@
 package org.yusupov.database.repositories.stickers
 
 import org.yusupov.database.dao.auth.UserDao
+import org.yusupov.database.dao.collections.{CollectionDao, UserCollectionDao}
 import org.yusupov.database.dao.stickers
 import org.yusupov.database.dao.stickers.{StickerDao, UserStickerDao, UserStickerRelationDao}
 import org.yusupov.database.repositories.Repository
 import org.yusupov.structures.{CollectionId, StickerId, UserId}
-import zio.macros.accessible
 import zio.{Has, ULayer, ZLayer}
 
 object UserStickersRepository extends Repository {
@@ -21,9 +21,13 @@ object UserStickersRepository extends Repository {
 
     def getStickers(userId: UserId, collectionId: CollectionId): Result[List[StickerDao]]
 
+    def getNeededStickersForUsers(userId: UserId): Result[List[StickerDao]]
+
+    def getStickersWithCount(userId: UserId, count: Int): Result[List[UserStickerDao]]
+
     def getStickersRelations(userId: UserId, collectionId: CollectionId): Result[List[UserStickerRelationDao]]
 
-    def getUsersBySticker(stickerId: StickerId): Result[List[UserDao]]
+    def getUsersByStickers(stickerId: List[StickerId]): Result[List[(UserDao, UserStickerDao)]]
 
     def updateStickerExchangeInfo(userId: UserId, stickerId: StickerId, count: Int): Result[Unit]
 
@@ -39,6 +43,14 @@ object UserStickersRepository extends Repository {
 
     lazy val stickersTable = quote {
       querySchema[StickerDao](""""Stickers"""")
+    }
+
+    lazy val usersCollectionsTable = quote {
+      querySchema[UserCollectionDao](""""UsersCollections"""")
+    }
+
+    lazy val collectionsTable = quote {
+      querySchema[CollectionDao](""""Collections"""")
     }
 
     lazy val usersTable = quote {
@@ -59,6 +71,21 @@ object UserStickersRepository extends Repository {
         } yield stickers
       }
 
+    override def getNeededStickersForUsers(userId: UserId): Result[List[StickerDao]] = {
+      val neededStickers = dbContext.run {
+        for {
+          userCollections <- usersCollectionsTable.filter(_.userId == lift(userId))
+          stickers <- stickersTable.join(_.collectionId == userCollections.collectionId)
+          userStickers <- usersStickersTable.leftJoin(us => us.stickerId == stickers.id && us.userId == userCollections.userId)
+        } yield (stickers, userStickers)
+      }
+
+      neededStickers.map(_.filter(_._2.isEmpty).map(_._1))
+    }
+
+    override def getStickersWithCount(userId: UserId, count: Int): Result[List[UserStickerDao]] =
+      dbContext.run(usersStickersTable.filter(us => us.userId == lift(userId) && us.count > lift(count)))
+
     def getStickersRelations(userId: UserId, collectionId: CollectionId): Result[List[UserStickerRelationDao]] = {
       val userStickersRelations = dbContext.run {
         for {
@@ -75,12 +102,12 @@ object UserStickersRepository extends Repository {
       )
     }
 
-    override def getUsersBySticker(stickerId: StickerId): Result[List[UserDao]] =
+    override def getUsersByStickers(stickerIds: List[StickerId]): Result[List[(UserDao, UserStickerDao)]] =
       dbContext.run {
         for {
-          usersStickers <- usersStickersTable.filter(_.stickerId == lift(stickerId))
+          usersStickers <- usersStickersTable.filter(s => liftQuery(stickerIds).contains(s.stickerId) && s.count > 0)
           users <- usersTable.join(_.id == usersStickers.userId)
-        } yield users
+        } yield (users, usersStickers)
       }
 
     override def updateStickerExchangeInfo(userId: UserId, stickerId: StickerId, count: Int): Result[Unit] =

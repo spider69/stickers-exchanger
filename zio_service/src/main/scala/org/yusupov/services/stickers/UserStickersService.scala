@@ -76,8 +76,8 @@ object UserStickersService {
       for {
         transactor <- TransactorService.databaseTransactor
         id <- ZIO.effect(UUID.fromString(stickerId))
-        usersDao <- userStickersRepository.getUsersBySticker(id).transact(transactor)
-        users = usersDao.map(_.toUser)
+        usersDao <- userStickersRepository.getUsersByStickers(List(id)).transact(transactor)
+        users = usersDao.map(_._1.toUser)
       } yield users
 
     override def updateStickersCount(userId: UserId, stickerId: String, count: Int): RIO[DBTransactor, Unit] =

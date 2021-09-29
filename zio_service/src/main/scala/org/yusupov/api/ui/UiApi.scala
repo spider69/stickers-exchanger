@@ -11,7 +11,7 @@ class UiApi[R <: Api.DefaultApiEnv with Clock with Blocking] extends Api[R] {
   import dsl._
 
   private val supportedFileFormats = List(".js", ".css", ".map", ".html", ".webm", ".png", ".jpg", ".json", ".ico")
-  private val uiRoutes = List("login", "signup", "home", "collections", "stickers", "users")
+  private val uiRoutes = List("login", "signup", "home", "collections", "stickers", "users", "exchanges")
 
   def static(file: String, request: Request[ApiTask]) =
     StaticFile.fromResource("web/" + file, Some(request)).getOrElseF(NotFound())

@@ -6,6 +6,7 @@ import org.http4s.implicits._
 import org.http4s.server.Router
 import org.yusupov.api.auth.AuthApi
 import org.yusupov.api.collections.{CollectionsApi, UserCollectionsApi}
+import org.yusupov.api.search.SearchApi
 import org.yusupov.api.stickers.{StickersApi, UserStickersApi}
 import org.yusupov.api.ui.UiApi
 import org.yusupov.config.Config
@@ -23,7 +24,8 @@ object Server extends Environment {
     "/api/stickers" -> new StickersApi().routes,
     "/api/collections" -> new CollectionsApi().routes,
     "/api/user/stickers" -> new UserStickersApi().routes,
-    "/api/user/collections" -> new UserCollectionsApi().routes
+    "/api/user/collections" -> new UserCollectionsApi().routes,
+    "/api/exchanges" -> new SearchApi().routes
   ).orNotFound
 
   private val server = for {
